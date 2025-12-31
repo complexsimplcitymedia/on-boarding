@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Check, Zap, Server, Code, Crown, Loader2, Gift, Star } from 'lucide-react';
+import { Check, Zap, Server, Code, Crown, Loader2, Gift, Star, Cpu } from 'lucide-react';
 import { supabase, SubscriptionPlan } from '../../lib/supabase';
+import { DeviceSpecs, getCapabilityMessage, getPlanCompatibility } from '../../lib/deviceDetection';
 
 interface SubscriptionStepProps {
   onSelectPlan: (plan: SubscriptionPlan) => void;
   userId?: string;
+  deviceSpecs?: DeviceSpecs;
 }
 
-export default function SubscriptionStep({ onSelectPlan, userId }: SubscriptionStepProps) {
+export default function SubscriptionStep({ onSelectPlan, userId, deviceSpecs }: SubscriptionStepProps) {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -81,10 +83,24 @@ export default function SubscriptionStep({ onSelectPlan, userId }: SubscriptionS
     <div>
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">Choose Your Plan</h2>
-        <p className="text-slate-400">
+        <p className="text-gray-400">
           All plans support the open-source mission. No contracts, cancel anytime.
         </p>
       </div>
+
+      {deviceSpecs && (
+        <div className="mb-6 p-4 bg-gray-900 border border-gray-800 rounded-lg">
+          <div className="flex items-center gap-3 mb-2">
+            <Cpu className="w-5 h-5 text-red-500" />
+            <h3 className="text-sm font-semibold text-white">Device Capability Check</h3>
+          </div>
+          <p className="text-sm text-gray-400">{getCapabilityMessage(deviceSpecs)}</p>
+          <div className="mt-2 text-xs text-gray-600">
+            {deviceSpecs.type} • {deviceSpecs.os} • {deviceSpecs.cpuCores} cores • {deviceSpecs.ramGB}GB RAM
+            {deviceSpecs.gpuAvailable && ' • GPU Available'}
+          </div>
+        </div>
+      )}
 
       {(isBetaUser || isEarlyAdopter) && (
         <div className="mb-6 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg">
@@ -116,6 +132,7 @@ export default function SubscriptionStep({ onSelectPlan, userId }: SubscriptionS
           const isPremium = plan.name.includes('Premium');
           const isFree = plan.name.includes('Free') || plan.name.includes('Self-Hosted');
           const features = Array.isArray(plan.features) ? plan.features : [];
+          const compatibility = deviceSpecs ? getPlanCompatibility(plan.name, deviceSpecs) : { compatible: true };
 
           return (
             <div
@@ -212,6 +229,19 @@ export default function SubscriptionStep({ onSelectPlan, userId }: SubscriptionS
                   <p className="text-xs text-slate-400 mt-1">
                     Complete vectorization, memory storage & retrieval technology
                   </p>
+                </div>
+              )}
+
+              {!compatibility.compatible && compatibility.warning && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-sm text-red-300 font-semibold mb-1">Device Compatibility Warning</p>
+                  <p className="text-xs text-gray-400">{compatibility.warning}</p>
+                </div>
+              )}
+
+              {compatibility.warning && compatibility.compatible && (
+                <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <p className="text-xs text-yellow-300">{compatibility.warning}</p>
                 </div>
               )}
 

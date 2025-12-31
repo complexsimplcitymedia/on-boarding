@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, Loader2, Network, Shield, Zap } from 'lucide-react';
 import { supabase, SubscriptionPlan } from '../lib/supabase';
+import { detectDeviceCapabilities, DeviceSpecs, getCapabilityMessage } from '../lib/deviceDetection';
 import RegistrationStep from './onboarding/RegistrationStep';
 import EmailVerificationStep from './onboarding/EmailVerificationStep';
 import RCSVerificationStep from './onboarding/RCSVerificationStep';
@@ -15,6 +16,7 @@ interface OnboardingData {
   email: string;
   phoneNumber: string;
   selectedPlan: SubscriptionPlan | null;
+  deviceSpecs: DeviceSpecs | null;
 }
 
 export default function OnboardingFlow() {
@@ -26,8 +28,22 @@ export default function OnboardingFlow() {
     username: '',
     email: '',
     phoneNumber: '',
-    selectedPlan: null
+    selectedPlan: null,
+    deviceSpecs: null
   });
+
+  useEffect(() => {
+    detectDevice();
+  }, []);
+
+  const detectDevice = async () => {
+    try {
+      const specs = await detectDeviceCapabilities();
+      setOnboardingData(prev => ({ ...prev, deviceSpecs: specs }));
+    } catch (err) {
+      console.error('Failed to detect device capabilities:', err);
+    }
+  };
 
   const steps: { id: OnboardingStep; label: string; icon: any }[] = [
     { id: 'registration', label: 'Register', icon: Shield },
@@ -74,6 +90,18 @@ export default function OnboardingFlow() {
         }
       }
 
+      const deviceData = onboardingData.deviceSpecs ? {
+        device_type: onboardingData.deviceSpecs.type,
+        device_os: onboardingData.deviceSpecs.os,
+        device_cpu_cores: onboardingData.deviceSpecs.cpuCores,
+        device_ram_gb: onboardingData.deviceSpecs.ramGB,
+        device_gpu_available: onboardingData.deviceSpecs.gpuAvailable,
+        device_storage_gb: onboardingData.deviceSpecs.storageGB,
+        device_is_flagship: onboardingData.deviceSpecs.isFlagship,
+        recommended_plan: onboardingData.deviceSpecs.recommendedPlan,
+        device_checked_at: new Date().toISOString()
+      } : {};
+
       const { data: newUser, error: insertError } = await supabase
         .from('users')
         .insert([{
@@ -82,7 +110,8 @@ export default function OnboardingFlow() {
           phone_number: phoneNumber,
           beta_user: isBetaUser,
           early_adopter: isEarlyAdopter,
-          referred_by: referrerId
+          referred_by: referrerId,
+          ...deviceData
         }])
         .select()
         .single();
@@ -215,14 +244,14 @@ export default function OnboardingFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Network className="w-12 h-12 text-cyan-400" />
+            <Network className="w-12 h-12 text-red-500" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">TaiScale Mesh Network</h1>
-          <p className="text-slate-400 text-lg">Join the neural-mesh layered AI consciousness</p>
+          <p className="text-gray-400 text-lg">Join the neural-mesh layered AI consciousness</p>
         </div>
 
         <div className="flex items-center justify-center mb-8">
@@ -235,19 +264,19 @@ export default function OnboardingFlow() {
               <div key={step.id} className="flex items-center">
                 <div className={`flex flex-col items-center ${index > 0 ? 'ml-4' : ''}`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                    isCompleted ? 'bg-green-500' : isActive ? 'bg-cyan-500' : 'bg-slate-700'
+                    isCompleted ? 'bg-green-500' : isActive ? 'bg-red-600' : 'bg-gray-800'
                   }`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   <span className={`text-xs mt-2 hidden sm:block ${
-                    isActive ? 'text-cyan-400' : isCompleted ? 'text-green-400' : 'text-slate-500'
+                    isActive ? 'text-red-500' : isCompleted ? 'text-green-400' : 'text-gray-600'
                   }`}>
                     {step.label}
                   </span>
                 </div>
                 {index < steps.length - 1 && (
                   <div className={`w-12 h-0.5 mt-[-20px] sm:mt-[-28px] mx-2 transition-all ${
-                    currentStepIndex > index ? 'bg-green-500' : 'bg-slate-700'
+                    currentStepIndex > index ? 'bg-green-500' : 'bg-gray-800'
                   }`} />
                 )}
               </div>
@@ -255,7 +284,7 @@ export default function OnboardingFlow() {
           })}
         </div>
 
-        <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8">
+        <div className="bg-gray-900 rounded-2xl shadow-2xl border border-gray-800 p-8">
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400">
               {error}
@@ -264,7 +293,7 @@ export default function OnboardingFlow() {
 
           {loading && (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+              <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
             </div>
           )}
 
@@ -288,7 +317,11 @@ export default function OnboardingFlow() {
           )}
 
           {!loading && currentStep === 'subscription' && (
-            <SubscriptionStep onSelectPlan={handleSubscriptionSelection} userId={onboardingData.userId || undefined} />
+            <SubscriptionStep
+              onSelectPlan={handleSubscriptionSelection}
+              userId={onboardingData.userId || undefined}
+              deviceSpecs={onboardingData.deviceSpecs || undefined}
+            />
           )}
 
           {!loading && currentStep === 'complete' && (
@@ -300,7 +333,7 @@ export default function OnboardingFlow() {
           )}
         </div>
 
-        <div className="mt-8 text-center text-slate-400 text-sm">
+        <div className="mt-8 text-center text-gray-500 text-sm">
           <p>Open-source shared resource • 24-hour data retention policy</p>
           <p className="mt-2">Your mesh synchronization data maintains hive coherence while protecting privacy</p>
         </div>

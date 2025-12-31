@@ -24,6 +24,15 @@ export interface User {
   referral_code: string;
   referred_by: string | null;
   referral_count: number;
+  device_type: string | null;
+  device_os: string | null;
+  device_cpu_cores: number;
+  device_ram_gb: number;
+  device_gpu_available: boolean;
+  device_storage_gb: number;
+  device_is_flagship: boolean;
+  recommended_plan: string | null;
+  device_checked_at: string | null;
   created_at: string;
   last_mesh_sync: string | null;
 }
