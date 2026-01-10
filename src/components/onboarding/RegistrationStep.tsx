@@ -19,7 +19,7 @@ export default function RegistrationStep({ onSubmit }: RegistrationStepProps) {
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-2">Create Your Account</h2>
-      <p className="text-gray-400 mb-6">Join the TaiScale mesh network and start contributing to the hive consciousness</p>
+      <p className="text-gray-400 mb-6">Join the Wolf Logic cognitive memory layer and start contributing to the hive consciousness</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>

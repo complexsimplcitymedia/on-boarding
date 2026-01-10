@@ -248,10 +248,14 @@ export default function OnboardingFlow() {
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Network className="w-12 h-12 text-red-500" />
+            <img
+              src="https://lh3.googleusercontent.com/a/ACg8ocIAf3moy1bgxW2Pbj_7pXbNSfg0Y6Q83ABzwWUlCwR2NUf0BMJhsA=s288-c-no"
+              alt="Wolf Logic Logo"
+              className="w-16 h-16 rounded-full"
+            />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">TaiScale Mesh Network</h1>
-          <p className="text-gray-400 text-lg">Join the neural-mesh layered AI consciousness</p>
+          <h1 className="text-4xl font-bold text-white mb-2">Wolf Logic</h1>
+          <p className="text-gray-400 text-lg">Cognitive Memory Layer</p>
         </div>
 
         <div className="flex items-center justify-center mb-8">
@@ -335,7 +339,7 @@ export default function OnboardingFlow() {
 
         <div className="mt-8 text-center text-gray-500 text-sm">
           <p>Open-source shared resource • 24-hour data retention policy</p>
-          <p className="mt-2">Your mesh synchronization data maintains hive coherence while protecting privacy</p>
+          <p className="mt-2">Your cognitive memory data maintains hive coherence while protecting privacy</p>
         </div>
       </div>
     </div>
