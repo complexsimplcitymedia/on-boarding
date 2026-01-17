@@ -1,13 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+// DEPRECATED: Supabase removed - using direct PostgreSQL (database.ts)
+// All data goes to YOUR infrastructure: 100.110.82.181:5433 via PostgREST port 3333
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = null; // Keep export for compatibility, but force null
 
 export interface User {
   id: string;
