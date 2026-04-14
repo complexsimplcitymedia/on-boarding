@@ -8,16 +8,18 @@ RUN npm ci
 
 COPY . .
 
-# Accept build-time env vars (optional overrides)
+# Build-time env vars — inject via --build-arg or host secrets, never hardcode
 ARG VITE_API_BASE=https://api.wolflogic-ai.com
 ARG VITE_AUTH0_DOMAIN=wolflogic-ai.us.auth0.com
-ARG VITE_AUTH0_CLIENT_ID=XwEDQX2h1lGRbcQek1OTodDdPmgI8Sl7
+ARG VITE_AUTH0_CLIENT_ID
 ARG VITE_AUTH0_AUDIENCE=https://api.wolflogic-ai.com
+ARG VITE_WOLF_JWT
 
 ENV VITE_API_BASE=$VITE_API_BASE
 ENV VITE_AUTH0_DOMAIN=$VITE_AUTH0_DOMAIN
 ENV VITE_AUTH0_CLIENT_ID=$VITE_AUTH0_CLIENT_ID
 ENV VITE_AUTH0_AUDIENCE=$VITE_AUTH0_AUDIENCE
+ENV VITE_WOLF_JWT=$VITE_WOLF_JWT
 
 RUN npm run build
 

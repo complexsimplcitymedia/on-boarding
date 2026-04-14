@@ -1,11 +1,9 @@
 // Wolf AI Registration API Client
 const API_BASE = (import.meta as any).env?.VITE_API_BASE ?? 'https://api.wolflogic-ai.com';
 
-// wolf_admin JWT — 10-year token, role: wolf_admin
-// Replace via VITE_WOLF_JWT env var in production
-const WOLF_JWT =
-  (import.meta as any).env?.VITE_WOLF_JWT ??
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoid29sZl9hZG1pbiIsInN1YiI6IndvbGYtYXBpLWNsaWVudCIsImlhdCI6MTc3NjE4Mzc5NSwiZXhwIjoyMDkxNTQzNzk1fQ.-1lWe4cAawiWgQLQKqYDIk0zUts2tQpFvC0QJV_WPmo';
+// wolf_admin JWT — injected at build time via VITE_WOLF_JWT env var
+// Set in .env (local) or host secrets (production) — never hardcode here
+const WOLF_JWT = (import.meta as any).env?.VITE_WOLF_JWT ?? '';
 
 const authHeaders = () => ({
   'Content-Type': 'application/json',
