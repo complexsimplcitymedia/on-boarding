@@ -1,10 +1,17 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Auth0Provider } from '@auth0/auth0-react';
 import App from './App.tsx';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
-  </StrictMode>
+    <Auth0Provider
+      domain="wolflogic-ai.us.auth0.com"
+      clientId="dMd0ammvo7jGCe5eJ7dgqiMTuglcxSsV"
+      authorizationParams={{ redirect_uri: window.location.origin }}
+    >
+      <App />
+    </Auth0Provider>
+  </StrictMode>,
 );

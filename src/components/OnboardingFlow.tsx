@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Check, Loader2, Network, Shield, Zap } from 'lucide-react';
 import { supabase, SubscriptionPlan } from '../lib/supabase';
 import { detectDeviceCapabilities, DeviceSpecs, getCapabilityMessage } from '../lib/deviceDetection';
+import Auth0SignInStep from './onboarding/Auth0SignInStep';
 import RegistrationStep from './onboarding/RegistrationStep';
 import EmailVerificationStep from './onboarding/EmailVerificationStep';
 import RCSVerificationStep from './onboarding/RCSVerificationStep';
 import SubscriptionStep from './onboarding/SubscriptionStep';
 import CompletionStep from './onboarding/CompletionStep';
 
-type OnboardingStep = 'registration' | 'email-verification' | 'rcs-verification' | 'subscription' | 'complete';
+type OnboardingStep = 'auth0-signin' | 'registration' | 'email-verification' | 'rcs-verification' | 'subscription' | 'complete';
 
 interface OnboardingData {
   userId: string | null;
@@ -20,7 +21,7 @@ interface OnboardingData {
 }
 
 export default function OnboardingFlow() {
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>('registration');
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>('auth0-signin');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
@@ -46,6 +47,7 @@ export default function OnboardingFlow() {
   };
 
   const steps: { id: OnboardingStep; label: string; icon: any }[] = [
+    { id: 'auth0-signin', label: 'Sign In', icon: Shield },
     { id: 'registration', label: 'Register', icon: Shield },
     { id: 'email-verification', label: 'Verify Email', icon: Check },
     { id: 'rcs-verification', label: 'RCS Check', icon: Network },
@@ -54,6 +56,15 @@ export default function OnboardingFlow() {
   ];
 
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
+
+  const handleAuth0Success = (email: string, name: string, _sub: string) => {
+    setOnboardingData(prev => ({
+      ...prev,
+      email,
+      username: name.replace(/\s+/g, '').toLowerCase().slice(0, 20),
+    }));
+    setCurrentStep('registration');
+  };
 
   const handleRegistration = async (username: string, email: string, phoneNumber: string, referralCode?: string) => {
     setLoading(true);
@@ -299,6 +310,10 @@ export default function OnboardingFlow() {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
             </div>
+          )}
+
+          {currentStep === 'auth0-signin' && (
+            <Auth0SignInStep onSuccess={handleAuth0Success} />
           )}
 
           {!loading && currentStep === 'registration' && (
