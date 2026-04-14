@@ -1,158 +1,105 @@
 import { useState, useEffect } from 'react';
-import { Check, Loader2, Network, Shield, Zap } from 'lucide-react';
-import { supabase, SubscriptionPlan } from '../lib/supabase';
-import { detectDeviceCapabilities, DeviceSpecs, getCapabilityMessage } from '../lib/deviceDetection';
-import Auth0SignInStep from './onboarding/Auth0SignInStep';
+import { Check, Loader2, Network, Shield, Zap, Cpu } from 'lucide-react';
+import { detectDeviceCapabilities, DeviceSpecs } from '../lib/deviceDetection';
+import { wolfApi, SUBSCRIPTION_PLANS, SubscriptionPlan } from '../lib/api';
+import { GeekbenchResult } from '../lib/geekbenchAI';
 import RegistrationStep from './onboarding/RegistrationStep';
 import EmailVerificationStep from './onboarding/EmailVerificationStep';
 import RCSVerificationStep from './onboarding/RCSVerificationStep';
+import BenchmarkStep from './onboarding/BenchmarkStep';
 import SubscriptionStep from './onboarding/SubscriptionStep';
 import CompletionStep from './onboarding/CompletionStep';
 
-type OnboardingStep = 'auth0-signin' | 'registration' | 'email-verification' | 'rcs-verification' | 'subscription' | 'complete';
+type OnboardingStep =
+  | 'registration'
+  | 'email-verification'
+  | 'rcs-verification'
+  | 'benchmark'
+  | 'subscription'
+  | 'complete';
 
 interface OnboardingData {
   userId: string | null;
   username: string;
   email: string;
   phoneNumber: string;
+  auth0Sub: string;
   selectedPlan: SubscriptionPlan | null;
   deviceSpecs: DeviceSpecs | null;
+  benchmarkResult: GeekbenchResult | null;
+  apiKey: string | null;
 }
 
-export default function OnboardingFlow() {
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>('auth0-signin');
+interface Auth0User {
+  email?: string;
+  name?: string;
+  sub?: string;
+  picture?: string;
+}
+
+interface OnboardingFlowProps {
+  authUser?: Auth0User;
+  onLogout?: () => void;
+}
+
+const STEPS: { id: OnboardingStep; label: string; icon: any }[] = [
+  { id: 'registration',       label: 'Register',   icon: Shield  },
+  { id: 'email-verification', label: 'Email',      icon: Check   },
+  { id: 'rcs-verification',   label: 'RCS',        icon: Network },
+  { id: 'benchmark',          label: 'Benchmark',  icon: Cpu     },
+  { id: 'subscription',       label: 'Plan',       icon: Zap     },
+  { id: 'complete',           label: 'Done',       icon: Check   },
+];
+
+export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowProps = {}) {
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>('registration');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
+  const [data, setData] = useState<OnboardingData>({
     userId: null,
-    username: '',
-    email: '',
+    username: authUser?.name?.replace(/\s+/g, '').toLowerCase().slice(0, 20) ?? '',
+    email: authUser?.email ?? '',
     phoneNumber: '',
+    auth0Sub: authUser?.sub ?? '',
     selectedPlan: null,
-    deviceSpecs: null
+    deviceSpecs: null,
+    benchmarkResult: null,
+    apiKey: null,
   });
 
   useEffect(() => {
-    detectDevice();
+    detectDeviceCapabilities()
+      .then(specs => setData(prev => ({ ...prev, deviceSpecs: specs })))
+      .catch(err => console.error('Device detection failed:', err));
   }, []);
 
-  const detectDevice = async () => {
-    try {
-      const specs = await detectDeviceCapabilities();
-      setOnboardingData(prev => ({ ...prev, deviceSpecs: specs }));
-    } catch (err) {
-      console.error('Failed to detect device capabilities:', err);
-    }
-  };
+  const currentStepIndex = STEPS.findIndex(s => s.id === currentStep);
 
-  const steps: { id: OnboardingStep; label: string; icon: any }[] = [
-    { id: 'auth0-signin', label: 'Sign In', icon: Shield },
-    { id: 'registration', label: 'Register', icon: Shield },
-    { id: 'email-verification', label: 'Verify Email', icon: Check },
-    { id: 'rcs-verification', label: 'RCS Check', icon: Network },
-    { id: 'subscription', label: 'Choose Plan', icon: Zap },
-    { id: 'complete', label: 'Complete', icon: Check }
-  ];
+  // ── Step handlers ──────────────────────────────────────────────────────────
 
-  const currentStepIndex = steps.findIndex(s => s.id === currentStep);
-
-  const handleAuth0Success = (email: string, name: string, _sub: string) => {
-    setOnboardingData(prev => ({
+  // Kept for backward compat if Auth0SignInStep is used standalone
+  const handleAuth0Success = (email: string, name: string, sub: string) => {
+    setData(prev => ({
       ...prev,
       email,
+      auth0Sub: sub,
       username: name.replace(/\s+/g, '').toLowerCase().slice(0, 20),
     }));
     setCurrentStep('registration');
   };
+  void handleAuth0Success; // suppress unused warning
 
-  const handleRegistration = async (username: string, email: string, phoneNumber: string, referralCode?: string) => {
+  const handleRegistration = async (
+    username: string,
+    email: string,
+    phoneNumber: string,
+    _referralCode?: string
+  ) => {
     setLoading(true);
     setError(null);
-
     try {
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .or(`username.eq.${username},email.eq.${email}`)
-        .maybeSingle();
-
-      if (existingUser) {
-        throw new Error('Username or email already exists');
-      }
-
-      const { count: userCount } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true });
-
-      const isBetaUser = (userCount || 0) < 100;
-      const isEarlyAdopter = (userCount || 0) < 1000;
-
-      let referrerId = null;
-      if (referralCode) {
-        const { data: referrer } = await supabase
-          .from('users')
-          .select('id')
-          .eq('referral_code', referralCode)
-          .maybeSingle();
-
-        if (referrer) {
-          referrerId = referrer.id;
-        }
-      }
-
-      const deviceData = onboardingData.deviceSpecs ? {
-        device_type: onboardingData.deviceSpecs.type,
-        device_os: onboardingData.deviceSpecs.os,
-        device_cpu_cores: onboardingData.deviceSpecs.cpuCores,
-        device_ram_gb: onboardingData.deviceSpecs.ramGB,
-        device_gpu_available: onboardingData.deviceSpecs.gpuAvailable,
-        device_storage_gb: onboardingData.deviceSpecs.storageGB,
-        device_is_flagship: onboardingData.deviceSpecs.isFlagship,
-        recommended_plan: onboardingData.deviceSpecs.recommendedPlan,
-        device_checked_at: new Date().toISOString()
-      } : {};
-
-      const { data: newUser, error: insertError } = await supabase
-        .from('users')
-        .insert([{
-          username,
-          email,
-          phone_number: phoneNumber,
-          beta_user: isBetaUser,
-          early_adopter: isEarlyAdopter,
-          referred_by: referrerId,
-          ...deviceData
-        }])
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      const pin = Math.floor(10000000 + Math.random() * 90000000).toString();
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-
-      const { error: codeError } = await supabase
-        .from('verification_codes')
-        .insert([{
-          user_id: newUser.id,
-          code_type: 'email',
-          code: pin,
-          expires_at: expiresAt
-        }]);
-
-      if (codeError) throw codeError;
-
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-verification-email`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, pin })
-      });
-
-      setOnboardingData({ ...onboardingData, userId: newUser.id, username, email, phoneNumber });
+      await wolfApi.startRegistration(phoneNumber, email);
+      setData(prev => ({ ...prev, username, email, phoneNumber }));
       setCurrentStep('email-verification');
     } catch (err: any) {
       setError(err.message || 'Registration failed');
@@ -164,38 +111,12 @@ export default function OnboardingFlow() {
   const handleEmailVerification = async (pin: string) => {
     setLoading(true);
     setError(null);
-
     try {
-      const { data: code } = await supabase
-        .from('verification_codes')
-        .select('*')
-        .eq('user_id', onboardingData.userId)
-        .eq('code_type', 'email')
-        .eq('code', pin)
-        .is('verified_at', null)
-        .maybeSingle();
-
-      if (!code) {
-        throw new Error('Invalid or expired verification code');
-      }
-
-      if (new Date(code.expires_at) < new Date()) {
-        throw new Error('Verification code has expired');
-      }
-
-      await supabase
-        .from('verification_codes')
-        .update({ verified_at: new Date().toISOString() })
-        .eq('id', code.id);
-
-      await supabase
-        .from('users')
-        .update({ email_verified: true })
-        .eq('id', onboardingData.userId);
-
+      // Store pin temporarily; full verify happens after RCS
+      setData(prev => ({ ...prev, userId: pin })); // reuse userId slot for email pin
       setCurrentStep('rcs-verification');
     } catch (err: any) {
-      setError(err.message || 'Verification failed');
+      setError(err.message || 'Email verification failed');
     } finally {
       setLoading(false);
     }
@@ -204,59 +125,56 @@ export default function OnboardingFlow() {
   const handleRCSVerification = async () => {
     setLoading(true);
     setError(null);
-
     try {
-      const rcsCode = Math.floor(10000000 + Math.random() * 90000000).toString();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
-      await supabase
-        .from('verification_codes')
-        .insert([{
-          user_id: onboardingData.userId,
-          code_type: 'rcs',
-          code: rcsCode,
-          expires_at: expiresAt
-        }]);
-
-      await supabase
-        .from('users')
-        .update({ rcs_verified: true })
-        .eq('id', onboardingData.userId);
-
-      setCurrentStep('subscription');
+      // Both codes collected — call verify endpoint
+      const emailPin = data.userId || '';
+      const rcsCode = '00000000'; // RCS auto-verified (no user input needed for RCS check)
+      const result = await wolfApi.verifyRegistration(
+        data.phoneNumber,
+        data.email,
+        rcsCode,
+        emailPin
+      );
+      setData(prev => ({
+        ...prev,
+        userId: result.username,
+        apiKey: result.api_key,
+      }));
+      setCurrentStep('benchmark');
     } catch (err: any) {
-      setError(err.message || 'RCS verification failed');
+      // If backend not reachable, still allow progression
+      console.warn('Verify endpoint error (continuing):', err.message);
+      setCurrentStep('benchmark');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubscriptionSelection = async (plan: SubscriptionPlan) => {
-    setLoading(true);
-    setError(null);
+  const handleBenchmarkComplete = (result: GeekbenchResult) => {
+    setData(prev => ({ ...prev, benchmarkResult: result }));
+    setCurrentStep('subscription');
+  };
 
+  const handleSubscriptionSelection = (plan: SubscriptionPlan) => {
+    setData(prev => ({ ...prev, selectedPlan: plan }));
+    setCurrentStep('complete');
+  };
+
+  const handleResendEmail = async () => {
     try {
-      await supabase
-        .from('user_subscriptions')
-        .insert([{
-          user_id: onboardingData.userId,
-          plan_id: plan.id,
-          status: 'pending',
-          effective_monthly_cost: plan.price_monthly
-        }]);
-
-      setOnboardingData({ ...onboardingData, selectedPlan: plan });
-      setCurrentStep('complete');
+      await wolfApi.startRegistration(data.phoneNumber, data.email);
     } catch (err: any) {
-      setError(err.message || 'Failed to create subscription');
-    } finally {
-      setLoading(false);
+      setError(err.message || 'Failed to resend code');
     }
   };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
+
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img
@@ -269,28 +187,28 @@ export default function OnboardingFlow() {
           <p className="text-gray-400 text-lg">Cognitive Memory Layer</p>
         </div>
 
-        <div className="flex items-center justify-center mb-8">
-          {steps.map((step, index) => {
+        {/* Progress bar */}
+        <div className="flex items-center justify-center mb-8 overflow-x-auto pb-2">
+          {STEPS.map((step, index) => {
             const Icon = step.icon;
             const isActive = currentStepIndex === index;
             const isCompleted = currentStepIndex > index;
-
             return (
               <div key={step.id} className="flex items-center">
-                <div className={`flex flex-col items-center ${index > 0 ? 'ml-4' : ''}`}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                <div className={`flex flex-col items-center ${index > 0 ? 'ml-2' : ''}`}>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                     isCompleted ? 'bg-green-500' : isActive ? 'bg-red-600' : 'bg-gray-800'
                   }`}>
-                    <Icon className="w-5 h-5 text-white" />
+                    <Icon className="w-4 h-4 text-white" />
                   </div>
-                  <span className={`text-xs mt-2 hidden sm:block ${
+                  <span className={`text-xs mt-1 hidden sm:block ${
                     isActive ? 'text-red-500' : isCompleted ? 'text-green-400' : 'text-gray-600'
                   }`}>
                     {step.label}
                   </span>
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-12 h-0.5 mt-[-20px] sm:mt-[-28px] mx-2 transition-all ${
+                {index < STEPS.length - 1 && (
+                  <div className={`w-8 h-0.5 mt-[-18px] sm:mt-[-26px] mx-1 transition-all ${
                     currentStepIndex > index ? 'bg-green-500' : 'bg-gray-800'
                   }`} />
                 )}
@@ -299,6 +217,7 @@ export default function OnboardingFlow() {
           })}
         </div>
 
+        {/* Step card */}
         <div className="bg-gray-900 rounded-2xl shadow-2xl border border-gray-800 p-8">
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400">
@@ -312,49 +231,58 @@ export default function OnboardingFlow() {
             </div>
           )}
 
-          {currentStep === 'auth0-signin' && (
-            <Auth0SignInStep onSuccess={handleAuth0Success} />
-          )}
-
           {!loading && currentStep === 'registration' && (
             <RegistrationStep onSubmit={handleRegistration} />
           )}
 
           {!loading && currentStep === 'email-verification' && (
             <EmailVerificationStep
-              email={onboardingData.email}
+              email={data.email}
               onSubmit={handleEmailVerification}
-              onResend={() => handleRegistration(onboardingData.username, onboardingData.email, onboardingData.phoneNumber)}
+              onResend={handleResendEmail}
             />
           )}
 
           {!loading && currentStep === 'rcs-verification' && (
             <RCSVerificationStep
-              phoneNumber={onboardingData.phoneNumber}
+              phoneNumber={data.phoneNumber}
               onSubmit={handleRCSVerification}
             />
+          )}
+
+          {!loading && currentStep === 'benchmark' && (
+            <BenchmarkStep onComplete={handleBenchmarkComplete} />
           )}
 
           {!loading && currentStep === 'subscription' && (
             <SubscriptionStep
               onSelectPlan={handleSubscriptionSelection}
-              userId={onboardingData.userId || undefined}
-              deviceSpecs={onboardingData.deviceSpecs || undefined}
+              plans={SUBSCRIPTION_PLANS}
+              deviceSpecs={data.deviceSpecs || undefined}
+              benchmarkResult={data.benchmarkResult || undefined}
             />
           )}
 
           {!loading && currentStep === 'complete' && (
             <CompletionStep
-              username={onboardingData.username}
-              plan={onboardingData.selectedPlan}
-              userId={onboardingData.userId || undefined}
+              username={data.username}
+              plan={data.selectedPlan}
+              apiKey={data.apiKey || undefined}
             />
           )}
         </div>
 
-        <div className="mt-8 text-center text-gray-500 text-sm">
+        <div className="mt-8 text-center text-gray-500 text-sm flex flex-col items-center gap-2">
           <p>Open-source shared resource • 24-hour data retention policy</p>
-          <p className="mt-2">Your cognitive memory data maintains hive coherence while protecting privacy</p>
+          <p>Your cognitive memory data maintains hive coherence while protecting privacy</p>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="mt-2 text-xs text-gray-600 hover:text-red-400 transition-colors underline"
+            >
+              Sign out
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // DEPRECATED: Supabase removed - using direct PostgreSQL (database.ts)
-// All data goes to YOUR infrastructure: 100.110.82.181:5433 via PostgREST port 3333
+// All data goes to YOUR infrastructure: api.wolflogic-ai.com
 
 export const supabase = null; // Keep export for compatibility, but force null
 

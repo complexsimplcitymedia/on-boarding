@@ -117,7 +117,7 @@ export async function linkGeekbenchAccount(
   apiKey: string
 ): Promise<void> {
   try {
-    const response = await fetch('http://100.110.82.181:8002/api/user/link-geekbench', {
+    const response = await fetch((import.meta as any).env?.VITE_API_BASE ? `${(import.meta as any).env.VITE_API_BASE}/api/user/link-geekbench` : 'https://api.wolflogic-ai.com/api/user/link-geekbench', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,

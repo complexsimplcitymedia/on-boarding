@@ -1,7 +1,7 @@
 // Direct PostgreSQL API via PostgREST - ALL DATA ON YOUR INFRASTRUCTURE
 // No Supabase, no external services - wolf_logic database only
 
-const POSTGRES_API_URL = import.meta.env.VITE_POSTGRES_API_URL || 'http://100.110.82.181:3333';
+const POSTGRES_API_URL = import.meta.env.VITE_API_BASE || 'https://api.wolflogic-ai.com';
 
 export interface User {
   id: string;

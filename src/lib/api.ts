@@ -1,5 +1,5 @@
 // Wolf AI Registration API Client
-const API_BASE = 'https://api.wolf-logic-ai.com';  // Registration API (PostgREST at 181:3333)
+const API_BASE = (import.meta as any).env?.VITE_API_BASE ?? 'https://api.wolflogic-ai.com';
 
 export interface RegistrationStartResponse {
   success: boolean;

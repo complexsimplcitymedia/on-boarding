@@ -1,8 +1,7 @@
 // Wolf Logic Authentication Service (Authentik SSO + wolf-api backend)
 
-const WOLF_API_URL = import.meta.env.VITE_WOLF_API_URL || 'https://mcp.complexsimplicityai.com';
-const API_KEY_SERVICE_URL = import.meta.env.VITE_API_KEY_SERVICE_URL || 'http://100.110.82.181:8100';
-const AUTHENTIK_URL = import.meta.env.VITE_AUTHENTIK_URL || 'http://100.110.82.181:8190';
+const WOLF_API_URL = import.meta.env.VITE_API_BASE || 'https://api.wolflogic-ai.com';
+const AUTHENTIK_URL = import.meta.env.VITE_AUTHENTIK_URL || 'https://auth.wolflogic-ai.com';
 const AUTHENTIK_CLIENT_ID = import.meta.env.VITE_AUTHENTIK_CLIENT_ID || '';
 
 export interface WolfUser {

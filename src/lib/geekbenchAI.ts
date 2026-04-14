@@ -442,7 +442,7 @@ export function getRecommendation(result: GeekbenchResult): {
 // Save benchmark results
 export async function saveBenchmarkResult(result: GeekbenchResult, apiKey: string): Promise<void> {
   try {
-    const response = await fetch('http://100.110.82.181:8002/api/benchmark', {
+    const response = await fetch((import.meta as any).env?.VITE_API_BASE ? `${(import.meta as any).env.VITE_API_BASE}/api/benchmark` : 'https://api.wolflogic-ai.com/api/benchmark', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
