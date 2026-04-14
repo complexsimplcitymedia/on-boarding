@@ -1,6 +1,17 @@
 // Wolf AI Registration API Client
 const API_BASE = (import.meta as any).env?.VITE_API_BASE ?? 'https://api.wolflogic-ai.com';
 
+// wolf_admin JWT — 10-year token, role: wolf_admin
+// Replace via VITE_WOLF_JWT env var in production
+const WOLF_JWT =
+  (import.meta as any).env?.VITE_WOLF_JWT ??
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoid29sZl9hZG1pbiIsInN1YiI6IndvbGYtYXBpLWNsaWVudCIsImlhdCI6MTc3NjE4Mzc5NSwiZXhwIjoyMDkxNTQzNzk1fQ.-1lWe4cAawiWgQLQKqYDIk0zUts2tQpFvC0QJV_WPmo';
+
+const authHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${WOLF_JWT}`,
+});
+
 export interface RegistrationStartResponse {
   success: boolean;
   message: string;
@@ -45,7 +56,7 @@ class WolfAPI {
   async startRegistration(phoneNumber: string, email: string): Promise<RegistrationStartResponse> {
     const response = await fetch(`${this.baseUrl}/register/start`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ phone_number: phoneNumber, email })
     });
 
@@ -65,7 +76,7 @@ class WolfAPI {
   ): Promise<RegistrationVerifyResponse> {
     const response = await fetch(`${this.baseUrl}/register/verify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({
         phone_number: phoneNumber,
         email,
@@ -83,7 +94,9 @@ class WolfAPI {
   }
 
   async getUserStatus(apiKey: string): Promise<UserStatus> {
-    const response = await fetch(`${this.baseUrl}/user/${apiKey}/status`);
+    const response = await fetch(`${this.baseUrl}/user/${apiKey}/status`, {
+      headers: authHeaders(),
+    });
 
     if (!response.ok) {
       const error = await response.json();
