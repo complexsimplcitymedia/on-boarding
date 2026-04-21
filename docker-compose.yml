@@ -4,7 +4,7 @@ services:
     container_name: wolf-onboarding
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "3300:80"
     environment:
       # Values pulled from host environment or .env file — never hardcode here
       - VITE_API_BASE=${VITE_API_BASE:-https://api.wolflogic-ai.com}
