@@ -94,7 +94,7 @@ export default function BenchmarkStep({ onComplete }: BenchmarkStepProps) {
           </div>
 
           <button
-            onClick={runBenchmark}
+            onClick={() => { void runBenchmark(); }}
             className="w-full py-3 bg-gradient-to-r from-red-600 to-purple-600 text-white font-semibold rounded-lg hover:from-red-700 hover:to-purple-700 transition-all transform hover:scale-[1.02]"
           >
             Run Benchmark
