@@ -150,7 +150,7 @@ export default function CompletionStep({ username, plan, apiKey }: CompletionSte
         </div>
 
         <button
-          onClick={() => window.location.href = 'https://wolflogic-ai.com/dashboard'}
+          onClick={() => { window.location.assign('https://wolflogic-ai.com/dashboard'); }}
           className="w-full py-4 bg-gradient-to-r from-red-600 to-purple-600 text-white font-bold rounded-lg hover:from-red-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] text-lg"
         >
           Go to Dashboard

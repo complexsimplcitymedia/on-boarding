@@ -101,8 +101,8 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
       await wolfApi.startRegistration(phoneNumber, email);
       setData(prev => ({ ...prev, username, email, phoneNumber }));
       setCurrentStep('email-verification');
-    } catch (err: unknown) {
-      setError(err.message || 'Registration failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -141,9 +141,8 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
         apiKey: result.api_key,
       }));
       setCurrentStep('benchmark');
-    } catch (err: unknown) {
-      // If backend not reachable, still allow progression
-      console.warn('Verify endpoint error (continuing):', err.message);
+    } catch (err) {
+      console.warn('Verify endpoint error (continuing):', err instanceof Error ? err.message : err);
       setCurrentStep('benchmark');
     } finally {
       setLoading(false);
@@ -163,8 +162,8 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
   const handleResendEmail = async () => {
     try {
       await wolfApi.startRegistration(data.phoneNumber, data.email);
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to resend code');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resend code');
     }
   };
 
@@ -232,21 +231,21 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
           )}
 
           {!loading && currentStep === 'registration' && (
-            <RegistrationStep onSubmit={handleRegistration} />
+            <RegistrationStep onSubmit={(...args) => { void handleRegistration(...args); }} />
           )}
 
           {!loading && currentStep === 'email-verification' && (
             <EmailVerificationStep
               email={data.email}
-              onSubmit={handleEmailVerification}
-              onResend={handleResendEmail}
+              onSubmit={(pin) => { void handleEmailVerification(pin); }}
+              onResend={() => { void handleResendEmail(); }}
             />
           )}
 
           {!loading && currentStep === 'rcs-verification' && (
             <RCSVerificationStep
               phoneNumber={data.phoneNumber}
-              onSubmit={handleRCSVerification}
+              onSubmit={() => { void handleRCSVerification(); }}
             />
           )}
 

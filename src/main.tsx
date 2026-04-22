@@ -4,7 +4,9 @@ import { Auth0Provider } from '@auth0/auth0-react';
 import App from './App.tsx';
 import './index.css';
 
-createRoot(document.getElementById('root')!).render(
+const root = document.getElementById('root');
+if (!root) throw new Error('Root element not found');
+createRoot(root).render(
   <StrictMode>
     <Auth0Provider
       domain="wolflogic-ai.us.auth0.com"

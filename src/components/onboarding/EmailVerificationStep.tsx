@@ -84,7 +84,7 @@ export default function EmailVerificationStep({ email, onSubmit, onResend }: Ema
         <div className="text-center">
           <button
             type="button"
-            onClick={handleResend}
+            onClick={() => { void handleResend(); }}
             disabled={resending}
             className="inline-flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors disabled:opacity-50"
           >

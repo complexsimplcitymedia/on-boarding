@@ -42,8 +42,8 @@ export default function AuthentikSignInStep({ onSuccess }: AuthentikSignInStepPr
 
       // Clear URL params
       window.history.replaceState({}, '', window.location.pathname);
-    } catch (err: unknown) {
-      setError(err.message || 'Authentication failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -155,7 +155,7 @@ export default function AuthentikSignInStep({ onSuccess }: AuthentikSignInStepPr
       </div>
 
       <button
-        onClick={handleSignIn}
+        onClick={() => { void handleSignIn(); }}
         disabled={loading}
         className="w-full py-3 bg-gradient-to-r from-red-600 to-purple-600 text-white font-semibold rounded-lg hover:from-red-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
       >

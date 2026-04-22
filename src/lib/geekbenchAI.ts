@@ -84,14 +84,15 @@ async function testINT8Quantization(): Promise<number> {
   const iterations = 100;
 
   for (let iter = 0; iter < iterations; iter++) {
-    // INT8 range: -128 to 127
     let sum = 0;
+    const rng = new Uint8Array(size * size * 2);
+    crypto.getRandomValues(rng);
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
-        // Simulate quantized inference with 8-bit integer ops
-        const a = Math.floor(Math.random() * 256) - 128;
-        const b = Math.floor(Math.random() * 256) - 128;
-        sum += (a * b) >> 7; // Shift to keep in INT8 range
+        const idx = (i * size + j) * 2;
+        const a = rng[idx] - 128;
+        const b = rng[idx + 1] - 128;
+        sum += (a * b) >> 7;
       }
     }
   }
@@ -172,10 +173,13 @@ async function testFP32Quantization(): Promise<number> {
 
   for (let iter = 0; iter < iterations; iter++) {
     let sum = 0.0;
+    const rng = new Uint32Array(size * size * 2);
+    crypto.getRandomValues(rng);
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
-        const a = Math.random() * 2.0 - 1.0;
-        const b = Math.random() * 2.0 - 1.0;
+        const idx = (i * size + j) * 2;
+        const a = (rng[idx] / 0xFFFFFFFF) * 2.0 - 1.0;
+        const b = (rng[idx + 1] / 0xFFFFFFFF) * 2.0 - 1.0;
         sum += a * b + Math.sin(a) * Math.cos(b);
       }
     }

@@ -230,7 +230,8 @@ export async function updateUserProfile(
   const token = getAuthToken();
   if (!token) throw new Error('Not authenticated');
 
-  const response = await fetch(`${WOLF_API_URL}/api/users/${userId}`, {
+  const safeUserId = encodeURIComponent(userId);
+  const response = await fetch(`${WOLF_API_URL}/api/users/${safeUserId}`, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,

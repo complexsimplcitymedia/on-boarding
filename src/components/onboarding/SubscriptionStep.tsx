@@ -189,10 +189,10 @@ export default function SubscriptionStep({ onSelectPlan, plans, deviceSpecs, ben
                 </div>
               )}
 
-              {compatibility && !compatibility.compatible && (compatibility as unknown).warning && (
+              {!compatibility.compatible && 'warning' in compatibility && (
                 <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
                   <p className="text-sm text-red-300 font-semibold mb-1">Device Compatibility Warning</p>
-                  <p className="text-xs text-gray-400">{(compatibility as unknown).warning}</p>
+                  <p className="text-xs text-gray-400">{String(compatibility.warning)}</p>
                 </div>
               )}
 

@@ -59,8 +59,8 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
       };
 
       onComplete(result);
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to fetch Geekbench result. Try manual entry instead.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch Geekbench result. Try manual entry instead.');
     } finally {
       setLoading(false);
     }
@@ -181,7 +181,7 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
 
           <div className="flex space-x-3">
             <button
-              onClick={handleUrlSubmit}
+              onClick={() => { void handleUrlSubmit(); }}
               disabled={loading || !resultUrl}
               className="flex-1 py-3 bg-gradient-to-r from-red-600 to-purple-600 text-white font-semibold rounded-lg hover:from-red-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >

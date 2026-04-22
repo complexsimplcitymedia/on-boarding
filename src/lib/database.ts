@@ -39,7 +39,8 @@ export const db = {
   },
 
   async getUser(id: string) {
-    const response = await fetch(`${POSTGRES_API_URL}/onboarding_users?id=eq.${id}`);
+    const safeId = encodeURIComponent(id);
+    const response = await fetch(`${POSTGRES_API_URL}/onboarding_users?id=eq.${safeId}`);
 
     if (!response.ok) {
       throw new Error(`Failed to get user: ${response.statusText}`);
@@ -50,7 +51,8 @@ export const db = {
   },
 
   async updateUser(id: string, updates: Partial<User>) {
-    const response = await fetch(`${POSTGRES_API_URL}/onboarding_users?id=eq.${id}`, {
+    const safeId = encodeURIComponent(id);
+    const response = await fetch(`${POSTGRES_API_URL}/onboarding_users?id=eq.${safeId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
