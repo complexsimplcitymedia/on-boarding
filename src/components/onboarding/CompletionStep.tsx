@@ -13,9 +13,9 @@ export default function CompletionStep({ username, plan, apiKey }: CompletionSte
   const [keyCopied, setKeyCopied] = useState(false);
 
   const copyToClipboard = (text: string, setter: (v: boolean) => void) => {
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
     setter(true);
-    setTimeout(() => setter(false), 2000);
+    setTimeout(() => { setter(false); }, 2000);
   };
 
   return (
@@ -47,7 +47,7 @@ export default function CompletionStep({ username, plan, apiKey }: CompletionSte
                 <p className="text-sm font-mono text-purple-300 truncate">{apiKey}</p>
               </div>
               <button
-                onClick={() => copyToClipboard(apiKey, setKeyCopied)}
+                onClick={() => { copyToClipboard(apiKey, setKeyCopied); }}
                 className="px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all"
               >
                 {keyCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
@@ -72,7 +72,7 @@ export default function CompletionStep({ username, plan, apiKey }: CompletionSte
               </p>
             </div>
             <button
-              onClick={() => copyToClipboard(`WOLF-${username.toUpperCase().slice(0, 6)}`, setCopied)}
+              onClick={() => { copyToClipboard(`WOLF-${username.toUpperCase().slice(0, 6)}`, setCopied); }}
               className="px-4 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all"
             >
               {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}

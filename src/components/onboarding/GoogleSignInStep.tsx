@@ -44,7 +44,7 @@ export default function GoogleSignInStep({ onSuccess }: GoogleSignInStepProps) {
       );
 
       onSuccess(response.user.id, response.user.email, response.user.name);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Authentication failed');
     } finally {
       setLoading(false);
@@ -87,7 +87,7 @@ export default function GoogleSignInStep({ onSuccess }: GoogleSignInStepProps) {
           <input
             type="tel"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
+            onChange={(e) => { setPhoneNumber(e.target.value); }}
             placeholder="+1 (555) 123-4567"
             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
@@ -103,7 +103,7 @@ export default function GoogleSignInStep({ onSuccess }: GoogleSignInStepProps) {
           <input
             type="text"
             value={referralCode}
-            onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+            onChange={(e) => { setReferralCode(e.target.value.toUpperCase()); }}
             placeholder="WOLF-XXXX"
             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
@@ -180,7 +180,7 @@ export default function GoogleSignInStep({ onSuccess }: GoogleSignInStepProps) {
       <div className="flex justify-center">
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
-          onError={() => setError('Google Sign-In failed')}
+          onError={() => { setError('Google Sign-In failed'); }}
           useOneTap
           theme="filled_black"
           size="large"

@@ -43,8 +43,8 @@ export default function EmailVerificationStep({ email, onSubmit, onResend }: Ema
 
   const handleResend = async () => {
     setResending(true);
-    await onResend();
-    setTimeout(() => setResending(false), 2000);
+    onResend();
+    setTimeout(() => { setResending(false); }, 2000);
   };
 
   return (
@@ -73,8 +73,8 @@ export default function EmailVerificationStep({ email, onSubmit, onResend }: Ema
                 inputMode="numeric"
                 maxLength={1}
                 value={digit}
-                onChange={(e) => handlePinChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
+                onChange={(e) => { handlePinChange(index, e.target.value); }}
+                onKeyDown={(e) => { handleKeyDown(index, e); }}
                 className="w-12 h-14 text-center text-2xl font-bold bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
               />
             ))}

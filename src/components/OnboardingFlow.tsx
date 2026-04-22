@@ -42,7 +42,7 @@ interface OnboardingFlowProps {
   onLogout?: () => void;
 }
 
-const STEPS: { id: OnboardingStep; label: string; icon: any }[] = [
+const STEPS: { id: OnboardingStep; label: string; icon: unknown }[] = [
   { id: 'registration',       label: 'Register',   icon: Shield  },
   { id: 'email-verification', label: 'Email',      icon: Check   },
   { id: 'rcs-verification',   label: 'RCS',        icon: Network },
@@ -69,8 +69,8 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
 
   useEffect(() => {
     detectDeviceCapabilities()
-      .then(specs => setData(prev => ({ ...prev, deviceSpecs: specs })))
-      .catch(err => console.error('Device detection failed:', err));
+      .then(specs => { setData(prev => ({ ...prev, deviceSpecs: specs })); })
+      .catch(err => { console.error('Device detection failed:', err); });
   }, []);
 
   const currentStepIndex = STEPS.findIndex(s => s.id === currentStep);
@@ -101,7 +101,7 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
       await wolfApi.startRegistration(phoneNumber, email);
       setData(prev => ({ ...prev, username, email, phoneNumber }));
       setCurrentStep('email-verification');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
@@ -115,7 +115,7 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
       // Store pin temporarily; full verify happens after RCS
       setData(prev => ({ ...prev, userId: pin })); // reuse userId slot for email pin
       setCurrentStep('rcs-verification');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Email verification failed');
     } finally {
       setLoading(false);
@@ -141,7 +141,7 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
         apiKey: result.api_key,
       }));
       setCurrentStep('benchmark');
-    } catch (err: any) {
+    } catch (err: unknown) {
       // If backend not reachable, still allow progression
       console.warn('Verify endpoint error (continuing):', err.message);
       setCurrentStep('benchmark');
@@ -163,7 +163,7 @@ export default function OnboardingFlow({ authUser, onLogout }: OnboardingFlowPro
   const handleResendEmail = async () => {
     try {
       await wolfApi.startRegistration(data.phoneNumber, data.email);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to resend code');
     }
   };

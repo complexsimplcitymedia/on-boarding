@@ -28,7 +28,7 @@ export default function AuthentikSignInStep({ onSuccess }: AuthentikSignInStepPr
 
     if (code) {
       setIsCallback(true);
-      handleCallback(code);
+      void handleCallback(code);
     }
   }, []);
 
@@ -42,7 +42,7 @@ export default function AuthentikSignInStep({ onSuccess }: AuthentikSignInStepPr
 
       // Clear URL params
       window.history.replaceState({}, '', window.location.pathname);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Authentication failed');
     } finally {
       setLoading(false);
@@ -129,7 +129,7 @@ export default function AuthentikSignInStep({ onSuccess }: AuthentikSignInStepPr
         <input
           type="tel"
           value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
+          onChange={(e) => { setPhoneNumber(e.target.value); }}
           placeholder="+1 (555) 123-4567"
           className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
         />
@@ -145,7 +145,7 @@ export default function AuthentikSignInStep({ onSuccess }: AuthentikSignInStepPr
         <input
           type="text"
           value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+          onChange={(e) => { setReferralCode(e.target.value.toUpperCase()); }}
           placeholder="WOLF-XXXX"
           className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
         />

@@ -53,13 +53,13 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
         deviceInfo: {
           processor: data.system?.processor || 'Unknown',
           cores: data.system?.processor_count || navigator.hardwareConcurrency || 4,
-          ramGB: data.system?.memory_gb || ((navigator as any).deviceMemory || 8),
+          ramGB: data.system?.memory_gb || ((navigator as unknown).deviceMemory || 8),
           gpu: data.system?.gpu || 'Unknown'
         }
       };
 
       onComplete(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to fetch Geekbench result. Try manual entry instead.');
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
       deviceInfo: {
         processor: 'User Submitted',
         cores: navigator.hardwareConcurrency || 4,
-        ramGB: (navigator as any).deviceMemory || 8,
+        ramGB: (navigator as unknown).deviceMemory || 8,
         gpu: 'User Submitted'
       }
     };
@@ -133,14 +133,14 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
           </div>
 
           <button
-            onClick={() => setInputMethod('url')}
+            onClick={() => { setInputMethod('url'); }}
             className="w-full py-3 bg-gradient-to-r from-red-600 to-purple-600 text-white font-semibold rounded-lg hover:from-red-700 hover:to-purple-700 transition-all"
           >
             Enter Result URL
           </button>
 
           <button
-            onClick={() => setInputMethod('manual')}
+            onClick={() => { setInputMethod('manual'); }}
             className="w-full py-3 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-all border border-gray-700"
           >
             Enter Scores Manually
@@ -170,7 +170,7 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
             <input
               type="url"
               value={resultUrl}
-              onChange={(e) => setResultUrl(e.target.value)}
+              onChange={(e) => { setResultUrl(e.target.value); }}
               placeholder="https://browser.geekbench.com/v6/cpu/12345"
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -212,7 +212,7 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
             <input
               type="number"
               value={manualScores.singleCore}
-              onChange={(e) => setManualScores({ ...manualScores, singleCore: e.target.value })}
+              onChange={(e) => { setManualScores({ ...manualScores, singleCore: e.target.value }); }}
               placeholder="e.g., 2400"
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -225,7 +225,7 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
             <input
               type="number"
               value={manualScores.multiCore}
-              onChange={(e) => setManualScores({ ...manualScores, multiCore: e.target.value })}
+              onChange={(e) => { setManualScores({ ...manualScores, multiCore: e.target.value }); }}
               placeholder="e.g., 9800"
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -238,7 +238,7 @@ export default function GeekbenchResultStep({ onComplete, onSkip }: GeekbenchRes
             <input
               type="number"
               value={manualScores.aiScore}
-              onChange={(e) => setManualScores({ ...manualScores, aiScore: e.target.value })}
+              onChange={(e) => { setManualScores({ ...manualScores, aiScore: e.target.value }); }}
               placeholder="e.g., 6100"
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
             />

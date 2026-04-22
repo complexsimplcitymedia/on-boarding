@@ -23,7 +23,7 @@ export default function SubscriptionStep({ onSelectPlan, plans, deviceSpecs, ben
 
   const handleSelectPlan = (plan: SubscriptionPlan) => {
     setSelectedPlanId(plan.id);
-    setTimeout(() => onSelectPlan(plan), 300);
+    setTimeout(() => { onSelectPlan(plan); }, 300);
   };
 
   // Determine if user qualifies for beta/early adopter based on benchmark
@@ -115,7 +115,7 @@ export default function SubscriptionStep({ onSelectPlan, plans, deviceSpecs, ben
           return (
             <div
               key={plan.id}
-              onClick={() => handleSelectPlan(plan)}
+              onClick={() => { handleSelectPlan(plan); }}
               className={`relative bg-slate-900 border rounded-xl p-6 cursor-pointer transition-all transform hover:scale-[1.02] ${
                 selectedPlanId === plan.id
                   ? 'border-cyan-500 ring-2 ring-cyan-500/50'
@@ -189,10 +189,10 @@ export default function SubscriptionStep({ onSelectPlan, plans, deviceSpecs, ben
                 </div>
               )}
 
-              {compatibility && !compatibility.compatible && (compatibility as any).warning && (
+              {compatibility && !compatibility.compatible && (compatibility as unknown).warning && (
                 <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
                   <p className="text-sm text-red-300 font-semibold mb-1">Device Compatibility Warning</p>
-                  <p className="text-xs text-gray-400">{(compatibility as any).warning}</p>
+                  <p className="text-xs text-gray-400">{(compatibility as unknown).warning}</p>
                 </div>
               )}
 

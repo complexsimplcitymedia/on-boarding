@@ -32,7 +32,7 @@ export default function RegistrationStep({ onSubmit }: RegistrationStepProps) {
               id="username"
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => { setUsername(e.target.value); }}
               className="w-full pl-11 pr-4 py-3 bg-black border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
               placeholder="Choose a unique username"
               required
@@ -53,7 +53,7 @@ export default function RegistrationStep({ onSubmit }: RegistrationStepProps) {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); }}
               className="w-full pl-11 pr-4 py-3 bg-black border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
               placeholder="your@email.com"
               required
@@ -72,7 +72,7 @@ export default function RegistrationStep({ onSubmit }: RegistrationStepProps) {
               id="phone"
               type="tel"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={(e) => { setPhoneNumber(e.target.value); }}
               className="w-full pl-11 pr-4 py-3 bg-black border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
               placeholder="+1 (555) 000-0000"
               required
@@ -91,7 +91,7 @@ export default function RegistrationStep({ onSubmit }: RegistrationStepProps) {
               id="referral"
               type="text"
               value={referralCode}
-              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              onChange={(e) => { setReferralCode(e.target.value.toUpperCase()); }}
               className="w-full pl-11 pr-4 py-3 bg-black border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all uppercase"
               placeholder="Enter referral code"
               maxLength={8}
